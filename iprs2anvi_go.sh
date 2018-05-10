@@ -5,7 +5,6 @@
 INPUT=${1?I need a file to work...}
 OUTPUT=${2:-iprs_go_matrix.tsv}
 
-# For GO
 cut -f 1,9,14 ${INPUT} | grep "GO:" |\
 while read -r f1 f2 c1
 do
