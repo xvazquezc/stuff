@@ -7,7 +7,7 @@
 # Usage:        iprs2anvio.sh -i iprs_output.tsv -o input4anvio_prefix [-d|--db db_list] [-g|--go_terms] [-p|--pathways] [-r|--ipr] [-s|--split] [-h|--help]
 # Description:  Script to parse InterProScan annotations into table format suitable for importing into Anvi'o.
 
-VERSION=0.1
+VERSION=0.1.1
 
 cmd(){
   echo `basename $0`;
@@ -30,8 +30,8 @@ usage(){
   ;
   OPTIONAL
   -d, --db; Only extract the annotations of specific databases. All annotations
-              ; will be extracted by default. For multiple, use a comma-separated
-              ; list.
+              ; will be extracted by default. For multiple databases, use a
+              ; comma-separated list.
   -g, --go_terms; Extract GO terms.
   -p, --pathways; Extract pathway annotations.
   -r, --ipr; Extract InterPro cross-reference annotations.

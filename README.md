@@ -27,7 +27,7 @@ REQUIRED
 
 OPTIONAL
 -d, --db         Only extract the annotations of specific databases. All annotations
-                 will be extracted by default. For multiple, use a comma-separated
+                 will be extracted by default. For multiple databases, use a comma-separated
                  list.
 -g, --go_terms   Extract GO terms.
 -p, --pathways   Extract pathway annotations.
