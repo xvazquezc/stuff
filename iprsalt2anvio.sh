@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script parses the output from IPRS with the -goterms option so it can be imported into anvio with anvi-import-functions
 
