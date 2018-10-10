@@ -109,7 +109,6 @@ while true; do
          if [ -z "$1" ]; then break; else echo "'$1' is not a valid option"; exit 3; fi;;
    esac
 done
-echo "before${DATABASES[@]}after"
 
 if [[ $# -ne 0 ]]; then
    echo $@ invalid option
