@@ -7,7 +7,7 @@
 # Usage:        iprs2anvio.sh -i iprs_output.tsv -o input4anvio_prefix [-d|--db db_list] [-g|--go_terms] [-p|--pathways] [-r|--ipr] [-s|--split] [-h|--help]
 # Description:  Script to parse InterProScan annotations into table format suitable for importing into Anvi'o.
 
-VERSION=0.1.1
+VERSION=0.2.0
 
 cmd(){
   echo `basename $0`;
@@ -174,12 +174,12 @@ if [[ $SPLIT == true ]]; then
   for tmp in ${PREFIX}.${OUTPUT}_*.tmp; do
     OUTFILE=${tmp##${PREFIX}.}
     echo -e "gene_callers_id\tsource\taccession\tfunction\te_value" > ${OUTFILE%.tmp}.tsv
-    cat ${tmp} >> ${OUTFILE%.tmp}.tsv
+    cat ${tmp} | awk -F '\t' '$5=="-" {OFS="\t" ; $5=""} 1' >> ${OUTFILE%.tmp}.tsv
     rm ${tmp}
   done
 else
   echo -e "gene_callers_id\tsource\taccession\tfunction\te_value" > ${OUTPUT}_iprs2anvio.tsv
-  cat ${PREFIX}.${OUTPUT}_*.tmp >> ${OUTPUT}_iprs2anvio.tsv
+  cat ${PREFIX}.${OUTPUT}_*.tmp | awk -F '\t' '$5=="-" {OFS="\t" ; $5=""} 1' >> ${OUTPUT}_iprs2anvio.tsv
   rm ${PREFIX}.${OUTPUT}_*.tmp
 fi
 
