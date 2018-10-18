@@ -7,7 +7,7 @@
 # Usage:        iprs2anvio.sh -i iprs_output.tsv -o input4anvio_prefix [-d|--db db_list] [-g|--go_terms] [-p|--pathways] [-r|--ipr] [-s|--split] [-h|--help]
 # Description:  Script to parse InterProScan annotations into table format suitable for importing into Anvi'o.
 
-VERSION=0.2.0
+VERSION=0.2.1
 
 cmd(){
   echo `basename $0`;
@@ -147,7 +147,7 @@ extract_pathways(){
 }
 
 extract_ipr(){
-  cat ${1} | awk -F '\t' '{OFS="\t" ; $12 ~ "IPR"}; {print $1 "\tInterPro\t" $12 "\t" $13 "\t" $9}' | sort -h | uniq > ${PREFIX}.${2}_ipr.tmp
+  cat ${1} | awk -F '\t' 'match($12, "IPR")' |awk -F '\t' '{OFS="\t"; print $1 "\tInterPro\t" $12 "\t" $13 "\t" }' | sort -h | uniq > ${PREFIX}.${2}_ipr.tmp
 }
 
 if [[ -z $DATABASES ]]; then
