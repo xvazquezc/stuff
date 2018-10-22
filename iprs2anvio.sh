@@ -7,7 +7,7 @@
 # Usage:        iprs2anvio.sh -i iprs_output.tsv -o input4anvio_prefix [-d|--db db_list] [-g|--go_terms] [-p|--pathways] [-r|--ipr] [-s|--split] [-h|--help]
 # Description:  Script to parse InterProScan annotations into table format suitable for importing into Anvi'o.
 
-VERSION=0.2.1
+VERSION=0.3.0
 
 cmd(){
   echo `basename $0`;
@@ -129,7 +129,7 @@ extract_go(){
     printf "$f1 $f2 $c\n"
   done
   done |\
-  awk '{print $1"\tGO\t"$3"\t\t"$2}' | sort -h | uniq > ${PREFIX}.${2}_go.tmp
+  awk '{print $1"\tGO\t"$3"\t\t"}' | sort -h | uniq > ${PREFIX}.${2}_go.tmp
 }
 
 extract_pathways(){
@@ -143,11 +143,15 @@ extract_pathways(){
   done
   done |\
   sed -e 's/\s/\t/g' | sed 's/:/\t/g' |\
-  awk '{print $1 "\t" $3 "\t" $4 "\t\t" $2}' | sort -h | uniq > ${PREFIX}.${2}_pathways.tmp
+  awk '{print $1 "\t" $3 "\t" $4 "\t\t" $2}' > ${PREFIX}.${2}_pathways.tmp
 }
 
 extract_ipr(){
-  cat ${1} | awk -F '\t' 'match($12, "IPR")' |awk -F '\t' '{OFS="\t"; print $1 "\tInterPro\t" $12 "\t" $13 "\t" }' | sort -h | uniq > ${PREFIX}.${2}_ipr.tmp
+  cat ${1} | awk -F '\t' 'match($12, "IPR")' |awk -F '\t' '{OFS="\t"; print $1 "\tInterPro\t" $12 "\t" $13 "\t" }' > ${PREFIX}.${2}_ipr.tmp
+}
+
+derep() {
+  awk -F'\t' '{ if($1 == pre1 && $2 == pre2 && $3 == pre3) {next} else {pre1=$1; pre2=$2; pre3=$3; print $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 } }'
 }
 
 if [[ -z $DATABASES ]]; then
@@ -155,32 +159,42 @@ if [[ -z $DATABASES ]]; then
 fi
 
 for i in ${DATABASES[@]}; do
-  extract_dbs ${INPUT} ${OUTPUT} ${i}
+  if [[ $i == ProSiteProfiles ]] | [[ $i == HAMAP ]]; then
+    extract_dbs ${INPUT} ${OUTPUT} ${i}   # input_file output_prefix db
+    sort -k1,1n -k 2,2 -k3,3 -k5,5gr ${PREFIX}.${OUTPUT}_${i}.tmp | derep > ${PREFIX}.${OUTPUT}_${i}-derep.tmp  # reverse evalue for $5, HAMAP and PSP use scores
+  else
+    extract_dbs ${INPUT} ${OUTPUT} ${i}   # input_file output_prefix db
+    sort -k1,1n -k 2,2 -k3,3 -k5,5g ${PREFIX}.${OUTPUT}_${i}.tmp | derep > ${PREFIX}.${OUTPUT}_${i}-derep.tmp
+  fi
 done
+
 
 if [[ $GOTERMS == true ]]; then
   extract_go ${INPUT} ${OUTPUT}
+  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${OUTPUT}_${i}.tmp | uniq | derep > ${PREFIX}.${OUTPUT}_${i}-derep.tmp
 fi
 
 if [[ $PATHWAYS == true ]]; then
   extract_pathways ${INPUT} ${OUTPUT}
+  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${2}_pathways.tmp | sort -h | uniq > ${PREFIX}.${2}_pathways-derep.tmp
 fi
 
 if [[ $IPR == true ]]; then
   extract_ipr ${INPUT} ${OUTPUT}
+  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${2}_ipr.tmp | uniq > ${PREFIX}.${2}_ipr-derep.tmp
 fi
 
 if [[ $SPLIT == true ]]; then
-  for tmp in ${PREFIX}.${OUTPUT}_*.tmp; do
+  for tmp in ${PREFIX}.${OUTPUT}_*-derep.tmp; do
     OUTFILE=${tmp##${PREFIX}.}
-    echo -e "gene_callers_id\tsource\taccession\tfunction\te_value" > ${OUTFILE%.tmp}.tsv
-    cat ${tmp} | awk -F '\t' '$5=="-" {OFS="\t" ; $5=""} 1' >> ${OUTFILE%.tmp}.tsv
+    echo -e "gene_callers_id\tsource\taccession\tfunction\te_value" > ${OUTFILE%-derep.tmp}.tsv
+    cat ${tmp} | awk -F '\t' '$5=="-" {OFS="\t" ; $5=""} 1' >> ${OUTFILE%-derep.tmp}.tsv
     rm ${tmp}
   done
 else
   echo -e "gene_callers_id\tsource\taccession\tfunction\te_value" > ${OUTPUT}_iprs2anvio.tsv
-  cat ${PREFIX}.${OUTPUT}_*.tmp | awk -F '\t' '$5=="-" {OFS="\t" ; $5=""} 1' >> ${OUTPUT}_iprs2anvio.tsv
-  rm ${PREFIX}.${OUTPUT}_*.tmp
+  cat ${PREFIX}.${OUTPUT}_*-derep.tmp | awk -F '\t' '$5=="-" {OFS="\t" ; $5=""} 1' >> ${OUTPUT}_iprs2anvio.tsv  ## substitute null (-) evalues with blanks
+  rm ${PREFIX}.${OUTPUT}_*-derep.tmp
 fi
 
 
