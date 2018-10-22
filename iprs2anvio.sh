@@ -7,7 +7,7 @@
 # Usage:        iprs2anvio.sh -i iprs_output.tsv -o input4anvio_prefix [-d|--db db_list] [-g|--go_terms] [-p|--pathways] [-r|--ipr] [-s|--split] [-h|--help]
 # Description:  Script to parse InterProScan annotations into table format suitable for importing into Anvi'o.
 
-VERSION=0.3.0
+VERSION=0.3.1
 
 cmd(){
   echo `basename $0`;
@@ -171,17 +171,17 @@ done
 
 if [[ $GOTERMS == true ]]; then
   extract_go ${INPUT} ${OUTPUT}
-  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${OUTPUT}_${i}.tmp | uniq | derep > ${PREFIX}.${OUTPUT}_${i}-derep.tmp
+  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${OUTPUT}_go.tmp | uniq | derep > ${PREFIX}.${OUTPUT}_go-derep.tmp
 fi
 
 if [[ $PATHWAYS == true ]]; then
   extract_pathways ${INPUT} ${OUTPUT}
-  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${2}_pathways.tmp | sort -h | uniq > ${PREFIX}.${2}_pathways-derep.tmp
+  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${OUTPUT}_pathways.tmp | sort -h | uniq > ${PREFIX}.${OUTPUT}_pathways-derep.tmp
 fi
 
 if [[ $IPR == true ]]; then
   extract_ipr ${INPUT} ${OUTPUT}
-  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${2}_ipr.tmp | uniq > ${PREFIX}.${2}_ipr-derep.tmp
+  sort -k1,1n -k 2,2 -k3,3 ${PREFIX}.${OUTPUT}_ipr.tmp | uniq > ${PREFIX}.${OUTPUT}_ipr-derep.tmp
 fi
 
 if [[ $SPLIT == true ]]; then
